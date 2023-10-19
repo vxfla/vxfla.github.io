@@ -32,7 +32,7 @@
     <div id="nav">
         <div class="nav-img" id="nav-img"></div>
         <div class="sentences">
-            存在先于本质
+            人是被判为自由的
         </div>
     </div>
 </header>
@@ -42,6 +42,35 @@
         <div class="clearfix">
     
     <div id="recent-posts">
+        
+            <div class="post-item">
+                <h1>
+                    <a href="/2023/10/19/【加速推理】分块并行解码/">
+                        【加速推理】分块并行解码
+                    </a>
+                </h1>
+                <div class="create">
+                    <span>Created</span>
+                    
+                        <time datetime="2023-10-19T07:12:00.000Z">
+                            2023-10-19
+                        </time>
+                    
+                    
+                </div>
+                
+                    <p>Blockwise parallel decoding<br><img src="/pic/BPD_1.png" alt="img"><br>来看一篇18年老文，和新近的LLM部署推理项目有关。<br>论文地址：<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1811.03115.pdf">https://arxiv.org/pdf/1811.03115.pdf</a></p>
+<h1 id="基础版"><a href="#基础版" class="headerlink" title="基础版"></a>基础版</h1><p>在原有模型基础上额外添加k个Lm headers，分别用来根据上文预测下文第i ∈ (1<del>k)个token。这几个新header可以并行工作，因而几乎同时生成接下来1</del>k个候选token。<br>然而预测的位置越远，准确性就越低，为了保证生成质量需要一个验证步骤。回忆transformer模型的训练，由于我们提前知道完整的句子，所以可以实现并行，这里我们得到接下来1<del>k个token的预测结果，同样可以利用预测下一个位置token的header并行计算每个位置生成结果的分布。<br>那么最后一步就是对比辅助header 2</del>k和header 1的结果，如果两者都认为预测token是使得句子概率最大的token则接受这个候选。<br>贪婪解码需要m次模型推理时间生成m个token，最优情况下该方法的用时为需要2m &#x2F; k次。<br><img src="/pic/BPD_2.png" alt="img"></p>
+<h1 id="进阶版"><a href="#进阶版" class="headerlink" title="进阶版"></a>进阶版</h1><p>进一步将 2m &#x2F; k 优化到 m &#x2F; k + 1。<br>回顾基础版，两次时间消耗分别用于预测和验证阶段，进阶版将验证和下一次的预测阶段合并。基础版验证时只有原始Lm header工作，进阶版在验证时所有header都要工作，同时完成这一步的验证和下一步的预测。<br><img src="/pic/BPD_3.png" alt="img"></p>
+<h1 id="模型-实验"><a href="#模型-实验" class="headerlink" title="模型&amp;实验"></a>模型&amp;实验</h1><p>原论文在原始transformer output的基础上额外新增了1~k个新header，算loss的时候出于显存大小约束，没有取各header的平均值，而是每个mini batch随机选择一个header的结果作为loss。<br><img src="/pic/BPD_4.png" alt="img"></p>
+
+                
+                <div class="readmore">
+                    <a href="/2023/10/19/【加速推理】分块并行解码/">
+                        Read More
+                    </a>
+                </div>
+            </div>
         
             <div class="post-item">
                 <h1>
@@ -119,7 +148,7 @@
             <a href="/tags">
                 Tags
                 <sup style="font-size: 12px">
-                    [0]
+                    [1]
                 </sup>
             </a>
         </h2>
@@ -136,7 +165,7 @@
 <aside id="acchives">
     <h2>Archives</h2>
     
-    <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/09/">September 2023</a></li></ul>
+    <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/09/">September 2023</a></li></ul>
     
 </aside>
 
