@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="keywords" content="">
     <meta name="description" content="Blockwise parallel decoding来看一篇18年老文，和新近的LLM部署推理项目有关。论文地址：https://arxiv.org/pdf/1811.03115.pdf
-基础版在原有模型基础上额外添加k个Lm headers，分别用来根据上文预测下文第i ∈ (1k)个token。这几个新header可以并行工作，因而几乎同时生成接下来1k个候选token。然而预测的位置越远，准确性就越低，为了保证生成质量需要一个验证步骤。回忆transformer模型的训练，由于我们提前知道完整的句子，所以可以实现并行，这里我们得到接下来1k个token的预测结果，同样可以利用预测下一个位置token的header...">
+基础版在原有模型基础上额外添加k个Lm headers，分别用来根据上文预测下文第i ∈ (1 ~ k)个token。这几个新header可以并行工作，因而几乎同时生成接下来1k个候选token。然而预测的位置越远，准确性就越低，为了保证生成质量需要一个验证步骤。回忆transformer模型的训练，由于我们提前知道完整的句子，所以可以实现并行，这里我们得到接下来1k个token的预测结果，同样可以利用预测下一个位置token的hea...">
     
         <link rel="icon" href="/favicon.ico">
     
@@ -33,7 +33,7 @@
     <div id="nav">
         <div class="nav-img" id="nav-img"></div>
         <div class="sentences">
-            人是被判为自由的
+            存在先于本质
         </div>
     </div>
 </header>
@@ -53,12 +53,12 @@
             
         </div>
         <p>Blockwise parallel decoding<br><img src="/pic/BPD_1.png" alt="img"><br>来看一篇18年老文，和新近的LLM部署推理项目有关。<br>论文地址：<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1811.03115.pdf">https://arxiv.org/pdf/1811.03115.pdf</a></p>
-<h1 id="基础版"><a href="#基础版" class="headerlink" title="基础版"></a>基础版</h1><p>在原有模型基础上额外添加k个Lm headers，分别用来根据上文预测下文第i ∈ (1<del>k)个token。这几个新header可以并行工作，因而几乎同时生成接下来1</del>k个候选token。<br>然而预测的位置越远，准确性就越低，为了保证生成质量需要一个验证步骤。回忆transformer模型的训练，由于我们提前知道完整的句子，所以可以实现并行，这里我们得到接下来1<del>k个token的预测结果，同样可以利用预测下一个位置token的header并行计算每个位置生成结果的分布。<br>那么最后一步就是对比辅助header 2</del>k和header 1的结果，如果两者都认为预测token是使得句子概率最大的token则接受这个候选。<br>贪婪解码需要m次模型推理时间生成m个token，最优情况下该方法的用时为需要2m &#x2F; k次。<br><img src="/pic/BPD_2.png" alt="img"></p>
+<h1 id="基础版"><a href="#基础版" class="headerlink" title="基础版"></a>基础版</h1><p>在原有模型基础上额外添加k个Lm headers，分别用来根据上文预测下文第i ∈ (1 ~ k)个token。这几个新header可以并行工作，因而几乎同时生成接下来1<del>k个候选token。<br>然而预测的位置越远，准确性就越低，为了保证生成质量需要一个验证步骤。回忆transformer模型的训练，由于我们提前知道完整的句子，所以可以实现并行，这里我们得到接下来1</del>k个token的预测结果，同样可以利用预测下一个位置token的header并行计算每个位置生成结果的分布。<br>那么最后一步就是对比辅助header 2 ~ k和header 1的结果，如果两者都认为预测token是使得句子概率最大的token则接受这个候选。<br>贪婪解码需要m次模型推理时间生成m个token，最优情况下该方法的用时为需要2m &#x2F; k次。<br><img src="/pic/BPD_2.png" alt="img"></p>
 <h1 id="进阶版"><a href="#进阶版" class="headerlink" title="进阶版"></a>进阶版</h1><p>进一步将 2m &#x2F; k 优化到 m &#x2F; k + 1。<br>回顾基础版，两次时间消耗分别用于预测和验证阶段，进阶版将验证和下一次的预测阶段合并。基础版验证时只有原始Lm header工作，进阶版在验证时所有header都要工作，同时完成这一步的验证和下一步的预测。<br><img src="/pic/BPD_3.png" alt="img"></p>
 <h1 id="模型-实验"><a href="#模型-实验" class="headerlink" title="模型&amp;实验"></a>模型&amp;实验</h1><p>原论文在原始transformer output的基础上额外新增了1~k个新header，算loss的时候出于显存大小约束，没有取各header的平均值，而是每个mini batch随机选择一个header的结果作为loss。<br><img src="/pic/BPD_4.png" alt="img"></p>
 
         <div>
-            <ul class="tags-category-list" itemprop="keywords"><li class="tags-category-list-item"><a class="tags-category-list-link" href="/tags/LLMs-%E5%8A%A0%E9%80%9F%E6%8E%A8%E7%90%86/" rel="tag">LLMs, 加速推理</a></li></ul>
+            <ul class="tags-category-list" itemprop="keywords"><li class="tags-category-list-item"><a class="tags-category-list-link" href="/tags/LLMs-%E5%8A%A0%E9%80%9F%E6%8E%A8%E7%90%86/" rel="tag">LLMs 加速推理</a></li></ul>
         </div>
         <div class="bottom-line"></div>
         
